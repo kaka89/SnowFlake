@@ -4,9 +4,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * twitter的snowflake算法 -- java版本
+ * twitter的snowflake算法
  */
-
 public class SnowFlake {
 
   /**
