@@ -37,7 +37,7 @@ public class SnowFlake {
 
   private final long dataCenterId; // 数据中心
   private final long machineId; // 机器标识
-  private long sequence = 0l; // 序列号
+  private long sequence = 0L; // 序列号
   private long lastTimestamp = -1L;// 上一次时间戳
 
   /**
