@@ -4,9 +4,9 @@ import java.util.Set;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * twitter的snowflake算法 -- java版本
+ * 雪花算法，用于生成long型ID ID为64位Long。 从高位算起，第一部分为 毫米时间戳， 占 64 - 22 = 42 位。其次数据中心5位，
+ * 机器标识5位，最后同一毫秒内的序列号12位。
  */
-
 public class SnowFlake {
 
   /**
@@ -24,9 +24,9 @@ public class SnowFlake {
   /**
    * 每一部分的最大值
    */
-  private static final long MAX_DATA_CENTER_NUM = -1L ^ (-1L << DATA_CENTER_BIT);
-  private static final long MAX_MACHINE_NUM = -1L ^ (-1L << MACHINE_BIT);
-  private static final long MAX_SEQUENCE = -1L ^ (-1L << SEQUENCE_BIT);
+  private static final long MAX_DATA_CENTER_NUM = (1L << DATA_CENTER_BIT) - 1;
+  private static final long MAX_MACHINE_NUM = (1L << MACHINE_BIT) - 1;
+  private static final long MAX_SEQUENCE = (1L << SEQUENCE_BIT) - 1;
 
   /**
    * 每一部分向左的位移
@@ -34,12 +34,11 @@ public class SnowFlake {
   private static final long MACHINE_LEFT = SEQUENCE_BIT;
   private static final long DATA_CENTER_LEFT = SEQUENCE_BIT + MACHINE_BIT;
   private static final long TIMESTAMP_LEFT = DATA_CENTER_LEFT + DATA_CENTER_BIT;
-  private static final int ONE = 1;
 
-  private long dataCenterId; // 数据中心
-  private long machineId; // 机器标识
-  private LongAdder sequence = new LongAdder(); // 序列号
-  private volatile long lastTimestamp = -1L;// 上一次时间戳
+  private final long dataCenterId; // 数据中心
+  private final long machineId; // 机器标识
+  private long sequence = 0l; // 序列号
+  private long lastTimestamp = -1L;// 上一次时间戳
 
   /**
    * constructor
@@ -61,8 +60,7 @@ public class SnowFlake {
   /**
    * 产生下一个ID
    *
-   * @return new value
-   * @throws RuntimeException
+   * @return
    */
   public synchronized long nextId() {
     long curStamp = getNewTimestamp();
@@ -72,29 +70,24 @@ public class SnowFlake {
 
     if (curStamp == lastTimestamp) {
       // 相同毫秒内，序列号自增
-      sequence.add(ONE);
-      // 同一毫秒的序列数已经达到最大
-      if (sequence.longValue() >= MAX_SEQUENCE) {
+      sequence++;
+      // 同一毫秒的序列数已经达到最大，则等待下一毫秒，且重制sequence
+      if (sequence > MAX_SEQUENCE) {
         curStamp = getNextMill();
-        sequence.reset();
+        sequence = 0L;
       }
     } else {
       // 不同毫秒内，序列号置为0
-      sequence.reset();
+      sequence = 0L;
     }
 
     lastTimestamp = curStamp;
     return (curStamp - START_TIMESTAMP) << TIMESTAMP_LEFT // 时间戳部分
         | dataCenterId << DATA_CENTER_LEFT // 数据中心部分
         | machineId << MACHINE_LEFT // 机器标识部分
-        | sequence.longValue(); // 序列号部分
+        | sequence; // 序列号部分
   }
 
-  /**
-   * 获取下一个毫秒时间戳
-   *
-   * @return next mill
-   */
   private long getNextMill() {
     long mill = getNewTimestamp();
     while (mill <= lastTimestamp) {
@@ -103,11 +96,6 @@ public class SnowFlake {
     return mill;
   }
 
-  /**
-   * 获取最新的时间戳
-   *
-   * @return current time millis
-   */
   private long getNewTimestamp() {
     return System.currentTimeMillis();
   }
