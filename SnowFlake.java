@@ -4,8 +4,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * 雪花算法，用于生成long型ID ID为64位Long。 从高位算起，第一部分为 毫米时间戳， 占 64 - 22 = 42 位。其次数据中心5位，
- * 机器标识5位，最后同一毫秒内的序列号12位。
+ * twitter的snowflake算法 雪花算法，用于生成long型ID ID为64位Long。 从高位算起，第一部分为 毫米时间戳， 占 64 - 22
+ * = 42 位。其次数据中心5位，机器标识5位，最后同一毫秒内的序列号12位。
  */
 public class SnowFlake {
 

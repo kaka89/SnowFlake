@@ -19,7 +19,8 @@ Twitter 的 雪花算法 算法的 Java 实现版本。
 
 ## 测试运行
 
-`java SnowFlake`
+- 编译：`javac SnowFlake.java`
+- 运行：`java SnowFlake`
 
 ## 注意事项
 
